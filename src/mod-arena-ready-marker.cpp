@@ -124,7 +124,10 @@ namespace
                 if (member == player || member->IsSpectator() || !member->GetSession())
                     continue;
 
-                ChatHandler(member->GetSession()).SendNotification("{} is marked as ready {}/{}", player->GetName(), count, req);
+                if (member->GetBgTeamId() == player->GetBgTeamId())
+                    ChatHandler(member->GetSession()).SendNotification("{} is marked as ready {}/{}", player->GetName(), count, req);
+                else
+                    ChatHandler(member->GetSession()).SendNotification("An opponent is marked as ready {}/{}", count, req);
             }
         }
 
