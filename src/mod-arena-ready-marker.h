@@ -17,16 +17,16 @@ struct ArenaReadyMarkerData
 
 constexpr ArenaReadyMarkerData ReadyMarkers[] =
 {
-    { BATTLEGROUND_BE, 6189.47f, 235.54f, 5.52f, 0.0f },
-    { BATTLEGROUND_BE, 6287.19f, 288.25f, 5.33f, 0.0f },
-    { BATTLEGROUND_DS, 1229.44f, 759.35f, 17.89f, 0.0f },
-    { BATTLEGROUND_DS, 1352.90f, 822.77f, 17.96f, 0.0f },
-    { BATTLEGROUND_NA, 4090.46f, 2875.43f, 12.16f, 0.0f },
-    { BATTLEGROUND_NA, 4022.82f, 2966.61f, 12.17f, 0.0f },
-    { BATTLEGROUND_RL, 1298.61f, 1598.59f, 31.62f, 0.0f },
-    { BATTLEGROUND_RL, 1273.71f, 1734.05f, 31.61f, 0.0f },
-    { BATTLEGROUND_RV, 769.93f, -301.04f, 2.80f, 0.0f },
-    { BATTLEGROUND_RV, 757.02f, -267.30f, 2.80f, 0.0f },
+    { BATTLEGROUND_BE, 6287.19f, 288.25f,  5.33f,  0.0f }, // Gold
+    { BATTLEGROUND_BE, 6189.47f, 235.54f,  5.52f,  0.0f }, // Green
+    { BATTLEGROUND_DS, 1229.44f, 759.35f,  17.89f, 0.0f }, // Gold
+    { BATTLEGROUND_DS, 1352.90f, 822.77f,  17.96f, 0.0f }, // Green
+    { BATTLEGROUND_NA, 4022.82f, 2966.61f, 12.17f, 0.0f }, // Gold
+    { BATTLEGROUND_NA, 4090.46f, 2875.43f, 12.16f, 0.0f }, // Green
+    { BATTLEGROUND_RL, 1273.71f, 1734.05f, 31.61f, 0.0f }, // Gold
+    { BATTLEGROUND_RL, 1298.61f, 1598.59f, 31.62f, 0.0f }, // Green
+    { BATTLEGROUND_RV, 758.16f, -279.86f,  2.80f,  0.0f }, // Gold
+    { BATTLEGROUND_RV, 768.72f, -288.48f,  2.80f,  0.0f }, // Green
 };
 
 #endif // MOD_ARENA_READY_MARKER_H
