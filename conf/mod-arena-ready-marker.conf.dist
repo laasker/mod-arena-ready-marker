@@ -1,0 +1,17 @@
+#
+# Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2+ license: https://github.com/azerothcore/azerothcore-wotlk/blob/master/LICENSE
+#
+
+[worldserver]
+
+########################################
+# mod-arena-ready-marker configuration
+########################################
+#
+#    ModArenaReadyMarker.Enable
+#        Description: Enable the ready marker objects to spawn.
+#        Default:     true  - Enabled
+#                     false - Disabled
+#
+
+ModArenaReadyMarker.Enable = true
