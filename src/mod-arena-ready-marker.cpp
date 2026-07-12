@@ -115,7 +115,9 @@ namespace
         }
 
         uint32 req = ArenaTeam::GetReqPlayersForType(bg->GetArenaType());
-        ChatHandler(player->GetSession()).SendNotification("You are marked as ready {}/{}", count, req);
+
+        ChatHandler handler(player->GetSession());
+        handler.SendNotification(handler.PGetParseModuleString(module_string, MARKED_READY_SELF, count, req));
 
         if (announceAll)
         {
@@ -124,10 +126,11 @@ namespace
                 if (member == player || member->IsSpectator() || !member->GetSession())
                     continue;
 
+                ChatHandler memberHandler(member->GetSession());
                 if (member->GetBgTeamId() == player->GetBgTeamId())
-                    ChatHandler(member->GetSession()).SendNotification("{} is marked as ready {}/{}", player->GetName(), count, req);
+                    memberHandler.SendNotification(memberHandler.PGetParseModuleString(module_string, MARKED_READY_TEAMMATE, player->GetName(), count, req));
                 else
-                    ChatHandler(member->GetSession()).SendNotification("An opponent is marked as ready {}/{}", count, req);
+                    memberHandler.SendNotification(memberHandler.PGetParseModuleString(module_string, MARKED_READY_OPPONENT, count, req));
             }
         }
 

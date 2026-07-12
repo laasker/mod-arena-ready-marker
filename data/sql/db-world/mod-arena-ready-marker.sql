@@ -9,3 +9,9 @@ INSERT INTO `gameobject_template_addon` (`entry`, `faction`, `flags`, `mingold`,
 DELETE FROM `gameobject_template_locale` WHERE `entry` = 301337;
 INSERT INTO `gameobject_template_locale` (`entry`, `locale`, `name`, `castBarCaption`, `VerifiedBuild`) VALUES
 (301337, 'deDE', 'Bereitschaftsmarkierung', '', 0);
+
+DELETE FROM `module_string` WHERE `module` = 'mod-arena-ready-marker';
+INSERT INTO `module_string` (`module`, `id`, `string`) VALUES
+('mod-arena-ready-marker', 0, 'You are marked as ready {}/{}'),
+('mod-arena-ready-marker', 1, '{} is marked as ready {}/{}'),
+('mod-arena-ready-marker', 2, 'An opponent is marked as ready {}/{}');

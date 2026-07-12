@@ -9,6 +9,15 @@
 
 constexpr uint32 ARENA_READY_MARKER_ENTRY = 301337;
 
+#define module_string "mod-arena-ready-marker"
+
+enum ArenaReadyMarkerStrings
+{
+    MARKED_READY_SELF     = 0,
+    MARKED_READY_TEAMMATE = 1,
+    MARKED_READY_OPPONENT = 2
+};
+
 struct ArenaReadyMarkerData
 {
     BattlegroundTypeId bgTypeId;
