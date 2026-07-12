@@ -15,3 +15,36 @@
 #
 
 ModArenaReadyMarker.Enable = true
+
+#
+#    ModArenaReadyMarker.AnnounceAll
+#        Description: Announce each ready click to every participant in the arena
+#                     ("{Player} is marked as ready 2/4") instead of notifying
+#                     only the player who clicked.
+#        Default:     true  - Enabled  (all participants are notified)
+#                     false - Disabled (only the clicking player is notified)
+#
+
+ModArenaReadyMarker.AnnounceAll = true
+
+#
+#    ModArenaReadyMarker.CountdownTime
+#        Description: Time in seconds left on the start countdown once every participant
+#                     is marked as ready. 0 means the match starts immediately.
+#                     Values are clamped from 0 to Arena.PrepTime in the worldserver config,
+#                     and only take effect when lower than the remaining preparation time
+#                     (see Arena.PrepTime in worldserver.conf, default 60).
+#        Default:     15
+#
+
+ModArenaReadyMarker.CountdownTime = 15
+
+#
+#    ModArenaReadyMarker.RatedOnly
+#        Description: Only spawn ready markers in rated arena matches.
+#                     Skirmishes would always use the full preparation time.
+#        Default:     false - Disabled (markers in rated and skirmish matches)
+#                     true  - Enabled  (markers in rated matches only)
+#
+
+ModArenaReadyMarker.RatedOnly = false

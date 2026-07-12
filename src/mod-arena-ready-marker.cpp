@@ -6,6 +6,7 @@
 #include "ArenaTeam.h"
 #include "Battleground.h"
 #include "Chat.h"
+#include "Config.h"
 #include "GameObject.h"
 #include "Log.h"
 #include "Map.h"
@@ -13,12 +14,20 @@
 #include "Player.h"
 #include "ScriptMgr.h"
 
+#include <algorithm>
+#include <atomic>
 #include <mutex>
 #include <unordered_map>
 #include <vector>
 
 namespace
 {
+    // Cached config values, refreshed on (re)load; atomics because BGs update on map worker threads
+    std::atomic<bool> moduleEnabled = true;
+    std::atomic<bool> ratedOnly = false;
+    std::atomic<bool> announceAll = false;
+    std::atomic<int32> countdownTime = BG_START_DELAY_15S;
+
     struct ReadyMarkerState
     {
         std::vector<ObjectGuid> markers;
@@ -91,7 +100,9 @@ namespace
 
     void HandleReadyMarkerClick(Battleground* bg, Player* player)
     {
-        if (!bg->isArena() || bg->GetStatus() >= STATUS_IN_PROGRESS || bg->GetStartDelayTime() <= BG_START_DELAY_15S
+        int32 targetCountdown = countdownTime;
+
+        if (!bg->isArena() || bg->GetStatus() >= STATUS_IN_PROGRESS || bg->GetStartDelayTime() <= targetCountdown
             || (bg->GetStartingEventFlags() & BG_STARTING_EVENT_3) || player->IsSpectator())
             return;
 
@@ -106,11 +117,30 @@ namespace
         uint32 req = ArenaTeam::GetReqPlayersForType(bg->GetArenaType());
         ChatHandler(player->GetSession()).SendNotification("You are marked as ready {}/{}", count, req);
 
+        if (announceAll)
+        {
+            for (auto const& [guid, member] : bg->GetPlayers())
+            {
+                if (member == player || member->IsSpectator() || !member->GetSession())
+                    continue;
+
+                ChatHandler(member->GetSession()).SendNotification("{} is marked as ready {}/{}", player->GetName(), count, req);
+            }
+        }
+
         if (count == req)
         {
-            bg->AddStartingEventFlag(BG_STARTING_EVENT_2);
-            bg->SetStartTime(bg->GetStartTime() + bg->GetStartDelayTime() - BG_START_DELAY_15S);
-            bg->SetStartDelayTime(BG_START_DELAY_15S);
+            // Suppress the announcements whose thresholds (60s/30s/15s, see Arena.cpp) the countdown jumps past,
+            // so stale "One minute" / "Thirty seconds" texts don't fire right after the jump
+            if (targetCountdown < BG_START_DELAY_1M)
+                bg->AddStartingEventFlag(BG_STARTING_EVENT_1);
+            if (targetCountdown < BG_START_DELAY_30S)
+                bg->AddStartingEventFlag(BG_STARTING_EVENT_2);
+            if (targetCountdown < BG_START_DELAY_15S)
+                bg->AddStartingEventFlag(BG_STARTING_EVENT_3);
+
+            bg->SetStartTime(bg->GetStartTime() + bg->GetStartDelayTime() - targetCountdown);
+            bg->SetStartDelayTime(targetCountdown);
         }
     }
 }
@@ -126,14 +156,23 @@ public:
 
     void OnBattlegroundSetup(Battleground* bg) override
     {
-        if (bg->isArena() && sConfigMgr->GetOption<bool>("ModArenaReadyMarker.Enable", true))
-            SpawnReadyMarkers(bg);
+        if (!moduleEnabled || !bg->isArena())
+            return;
+
+        if (ratedOnly && !bg->isRated())
+            return;
+
+        SpawnReadyMarkers(bg);
     }
 
     void OnBattlegroundUpdate(Battleground* bg, uint32 /*diff*/) override
     {
-        // Remove the markers once the 15 seconds announcement was reached
-        if (bg->isArena() && bg->GetStatus() == STATUS_WAIT_JOIN && (bg->GetStartingEventFlags() & BG_STARTING_EVENT_3))
+        if (!bg->isArena() || bg->GetStatus() != STATUS_WAIT_JOIN)
+            return;
+
+        // Remove the markers once clicking them can no longer expedite the countdown:
+        // the 15 seconds announcement was reached, or the countdown is at/below the configured target
+        if ((bg->GetStartingEventFlags() & BG_STARTING_EVENT_3) || bg->GetStartDelayTime() <= countdownTime)
             DespawnReadyMarkers(bg);
     }
 
@@ -141,6 +180,22 @@ public:
     {
         std::lock_guard<std::mutex> lock(stateMutex);
         stateStore.erase(bg);
+    }
+};
+
+class ArenaReadyMarkerWorldScript : public WorldScript
+{
+public:
+    ArenaReadyMarkerWorldScript() : WorldScript("ArenaReadyMarkerWorldScript", {
+        WORLDHOOK_ON_AFTER_CONFIG_LOAD
+    }) { }
+
+    void OnAfterConfigLoad(bool /*reload*/) override
+    {
+        moduleEnabled = sConfigMgr->GetOption<bool>("ModArenaReadyMarker.Enable", true);
+        announceAll = sConfigMgr->GetOption<bool>("ModArenaReadyMarker.AnnounceAll", true);
+        countdownTime = std::clamp<int32>(sConfigMgr->GetOption<int32>("ModArenaReadyMarker.CountdownTime", 15), 0, sWorld->getIntConfig(CONFIG_ARENA_PREP_TIME)) * IN_MILLISECONDS;
+        ratedOnly = sConfigMgr->GetOption<bool>("ModArenaReadyMarker.RatedOnly", false);
     }
 };
 
@@ -160,6 +215,7 @@ public:
 
 void ModArenaReadyMarkerScripts()
 {
+    new ArenaReadyMarkerWorldScript();
     new ArenaReadyMarkerBGScript();
     new go_arena_ready_marker();
 }
