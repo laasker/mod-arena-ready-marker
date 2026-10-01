@@ -116,6 +116,12 @@ namespace
 
         uint32 req = ArenaTeam::GetReqPlayersForType(bg->GetArenaType());
 
+        // GM character counts as 5
+        if (player->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
+        {
+            count += 5;
+        }
+
         ChatHandler handler(player->GetSession());
         handler.SendNotification(handler.PGetParseModuleString(module_string, MARKED_READY_SELF, count, req));
 
@@ -134,7 +140,7 @@ namespace
             }
         }
 
-        if (count == req)
+        if (count >= req)
         {
             // Suppress the announcements whose thresholds (60s/30s/15s, see Arena.cpp) the countdown jumps past,
             // so stale "One minute" / "Thirty seconds" texts don't fire right after the jump
